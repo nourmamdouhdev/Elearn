@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { ChevronRight, FileText, PlayCircle, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { ChevronRight, FileText, PlayCircle, Clock } from "lucide-react";
 import Link from "next/link";
 import { StudentExam } from "@/components/student/StudentExam";
+import { ExpirationBanner } from "@/components/student/ExpirationBanner";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function LessonViewerPage({ params }: PageProps) {
@@ -31,8 +32,7 @@ export default async function LessonViewerPage({ params }: PageProps) {
             include: { options: true }
           },
           attempts: {
-            where: { studentId: userId, passed: true },
-            take: 1
+            where: { studentId: userId }
           }
         }
       }
@@ -45,7 +45,7 @@ export default async function LessonViewerPage({ params }: PageProps) {
 
   // Check purchase authorization
   let hasAccess = lesson.isFree;
-  let purchase: any = null;
+  let purchase: { expiresAt: Date; purchasedAt: Date } | null = null;
   
   if (!hasAccess) {
     purchase = await prisma.purchase.findFirst({
@@ -53,6 +53,10 @@ export default async function LessonViewerPage({ params }: PageProps) {
         studentId: userId,
         lessonId: lesson.id,
         isActive: true,
+      },
+      select: {
+        expiresAt: true,
+        purchasedAt: true,
       }
     });
     
@@ -64,11 +68,14 @@ export default async function LessonViewerPage({ params }: PageProps) {
     if (new Date() > purchase.expiresAt) {
       return (
         <div className="flex-col items-center justify-center py-2xl gap-lg text-center animate-fade-in dashboard-theme">
-          <div className="p-xl bg-error-glow/10 rounded-full text-error mb-md">
+          <div className="p-xl rounded-full mb-md" style={{ background: "rgba(255, 107, 107, 0.1)", color: "var(--error)" }}>
             <Clock size={64} />
           </div>
           <h1 className="text-2xl font-bold">عذراً، لقد انتهت صلاحية هذه الحصة</h1>
-          <p className="text-secondary max-w-md">انتهت مدة اشتراكك في هذه الحصة بتاريخ {purchase.expiresAt.toLocaleDateString('ar-EG')}. يمكنك إعادة الشراء للحصول على وصول جديد.</p>
+          <p className="text-secondary max-w-md">
+            انتهت مدة اشتراكك في هذه الحصة بتاريخ {purchase.expiresAt.toLocaleDateString('ar-EG')}.
+            يمكنك إعادة الشراء للحصول على وصول جديد.
+          </p>
           <Link href={`/courses/${lesson.courseId}`} className="btn btn-primary mt-lg">العودة لصفحة الكورس</Link>
         </div>
       );
@@ -77,7 +84,10 @@ export default async function LessonViewerPage({ params }: PageProps) {
   }
 
   // Check Exam requirement
-  const isExamPassed = !lesson.exam || (lesson.exam.attempts.length > 0);
+  const allAttempts = lesson.exam?.attempts ?? [];
+  const passedAttempts = allAttempts.filter(a => a.passed);
+  const isExamPassed = !lesson.exam || passedAttempts.length > 0;
+  const attemptCount = allAttempts.length;
 
   // Get primary video content if it exists
   const videoContent = lesson.contents.find(c => c.type === "VIDEO");
@@ -96,12 +106,22 @@ export default async function LessonViewerPage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* Expiration Banner */}
+      {purchase && (
+        <ExpirationBanner expiresAt={purchase.expiresAt.toISOString()} />
+      )}
+
       <div className="grid gap-2xl" style={{ gridTemplateColumns: "1fr", maxWidth: "1000px" }}>
         
         {/* Conditional Rendering: Exam vs Video */}
         {!isExamPassed ? (
           <div className="card shadow-lg p-xl md:p-2xl border-primary-glow">
-            <StudentExam lessonId={id} exam={lesson.exam} studentId={userId} />
+            <StudentExam
+              lessonId={id}
+              exam={lesson.exam}
+              studentId={userId}
+              attemptCount={attemptCount}
+            />
           </div>
         ) : (
           <>

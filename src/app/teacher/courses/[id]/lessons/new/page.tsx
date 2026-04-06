@@ -3,7 +3,7 @@ import { ArrowRight, Save } from "lucide-react";
 import { createLesson } from "../../../actions";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function NewLessonPage({ params }: PageProps) {

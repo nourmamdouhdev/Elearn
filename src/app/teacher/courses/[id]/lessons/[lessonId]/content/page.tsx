@@ -7,7 +7,7 @@ import { ExamManager } from "@/components/teacher/ExamManager";
 import { FileUploader } from "@/components/teacher/FileUploader";
 
 interface PageProps {
-  params: { id: string; lessonId: string };
+  params: Promise<{ id: string; lessonId: string }>;
 }
 
 export default async function LessonContentEditorPage({ params }: PageProps) {

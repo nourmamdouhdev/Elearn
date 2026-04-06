@@ -1,10 +1,17 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Wallet, Plus, CreditCard, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { Wallet, CreditCard, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { WalletTopup } from "@/components/student/WalletTopup";
+import { WalletVerify } from "@/components/student/WalletVerify";
 
-export default async function WalletPage() {
+interface PageProps {
+  searchParams: Promise<{ success?: string; canceled?: string; amount?: string; session_id?: string }>;
+}
+
+export default async function WalletPage({ searchParams }: PageProps) {
   const session = await auth();
   const userId = session?.user?.id;
+  const params = await searchParams;
 
   if (!userId) return null;
 
@@ -29,6 +36,22 @@ export default async function WalletPage() {
         <p style={{ color: "var(--text-secondary)" }}>أدر رصيدك واشحن محفظتك بكل سهولة وبأمان.</p>
       </div>
 
+      {/* Payment Verification — actively credits the wallet */}
+      {params.success && params.session_id && (
+        <WalletVerify sessionId={params.session_id} amount={params.amount || "0"} />
+      )}
+
+      {params.canceled && (
+        <div
+          className="flex items-center gap-md p-lg rounded-xl animate-fade-in"
+          style={{ background: "rgba(255, 185, 70, 0.1)", border: "1px solid var(--warning)" }}
+        >
+          <p style={{ fontWeight: 600, color: "var(--warning)" }}>
+            تم إلغاء عملية الدفع. لم يتم خصم أي مبلغ.
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-2 gap-lg">
         {/* Balance Card */}
         <div className="card card-gradient flex-col items-center justify-center text-center py-2xl" style={{ position: "relative", overflow: "hidden" }}>
@@ -40,29 +63,7 @@ export default async function WalletPage() {
         </div>
 
         {/* Top up Actions */}
-        <div className="card flex-col gap-md justify-center py-xl px-xl">
-          <h3 className="mb-sm">إضافة رصيد</h3>
-          
-          <button className="btn btn-primary w-full justify-between" style={{ padding: "1rem" }}>
-            <span className="flex items-center gap-sm"><CreditCard size={20} /> دفع إلكتروني (بطاقة بنكية)</span>
-            <Plus size={20} />
-          </button>
-          
-          <div className="divider my-sm">
-            <span className="divider-text">أو باستخدام</span>
-          </div>
-
-          <form className="flex gap-sm">
-            <input 
-              type="text" 
-              className="form-input" 
-              placeholder="أدخل كود الشحن (مثال: EL-1234)" 
-              style={{ flex: 1 }}
-              dir="ltr"
-            />
-            <button type="button" className="btn btn-secondary">شحن</button>
-          </form>
-        </div>
+        <WalletTopup />
       </div>
 
       {/* Transaction History */}

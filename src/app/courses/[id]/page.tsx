@@ -6,7 +6,6 @@ import { auth } from "@/lib/auth";
 import { 
   PlayCircle, 
   Lock, 
-  Unlock, 
   Clock, 
   Award, 
   BookOpen, 
@@ -14,6 +13,8 @@ import {
   Heart
 } from "lucide-react";
 import Link from "next/link";
+import { PurchaseLessonButton } from "@/components/student/PurchaseLessonButton";
+import { PurchaseCourseButton } from "@/components/student/PurchaseCourseButton";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -44,20 +45,26 @@ export default async function CourseDetailPage({ params }: PageProps) {
   // Get user's purchased lessons for this course if logged in
   let purchasedLessonIds: string[] = [];
   let isFavorite = false;
+  let walletBalance = 0;
 
   if (userId) {
-    const [purchases, favoriteRecord] = await Promise.all([
+    const [purchases, favoriteRecord, wallet] = await Promise.all([
       prisma.purchase.findMany({
         where: { studentId: userId, isActive: true },
         select: { lessonId: true }
       }),
       prisma.favorite.findUnique({
         where: { userId_courseId: { userId, courseId: course.id } }
+      }),
+      prisma.wallet.findUnique({
+        where: { userId },
+        select: { balance: true }
       })
     ]);
 
     purchasedLessonIds = purchases.map(p => p.lessonId);
     isFavorite = !!favoriteRecord;
+    walletBalance = wallet?.balance ?? 0;
   }
 
   const coursePrice = course.price.toString();
@@ -109,7 +116,23 @@ export default async function CourseDetailPage({ params }: PageProps) {
                   </div>
                 </div>
                 <div className="flex gap-sm">
-                  <button className="btn btn-primary btn-lg">شراء الكورس كاملاً</button>
+                  {userId ? (
+                    <PurchaseCourseButton
+                      courseTitle={course.titleAr || course.title}
+                      lessons={course.lessons.map(l => ({
+                        id: l.id,
+                        title: l.titleAr || l.title,
+                        price: Number(l.price),
+                        isFree: l.isFree,
+                      }))}
+                      purchasedLessonIds={purchasedLessonIds}
+                      walletBalance={walletBalance}
+                    />
+                  ) : (
+                    <Link href="/auth/login" className="btn btn-primary btn-lg">
+                      سجل دخول للشراء
+                    </Link>
+                  )}
                   <button className={`btn ${isFavorite ? 'btn-danger' : 'btn-outline'} btn-icon`}>
                     <Heart size={24} fill={isFavorite ? "currentColor" : "none"} />
                   </button>
@@ -146,7 +169,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
               </div>
             ) : (
               <div className="flex-col gap-md">
-                {course.lessons.map((lesson, idx) => {
+                {course.lessons.map((lesson) => {
                   const hasAccess = lesson.isFree || purchasedLessonIds.includes(lesson.id);
                   return (
                     <div key={lesson.id} className="card p-0 overflow-hidden" style={{ transition: "var(--transition-fast)" }}>
@@ -178,10 +201,17 @@ export default async function CourseDetailPage({ params }: PageProps) {
                             <Link href={`/lessons/${lesson.id}`} className="btn btn-primary btn-sm">
                               مشاهدة الدرس
                             </Link>
+                          ) : userId ? (
+                            <PurchaseLessonButton
+                              lessonId={lesson.id}
+                              lessonTitle={lesson.titleAr || lesson.title}
+                              price={Number(lesson.price)}
+                              walletBalance={walletBalance}
+                            />
                           ) : (
-                            <button className="btn btn-outline btn-sm">
-                              شراء الحصة
-                            </button>
+                            <Link href="/auth/login" className="btn btn-outline btn-sm">
+                              سجل دخول للشراء
+                            </Link>
                           )}
                         </div>
                       </div>

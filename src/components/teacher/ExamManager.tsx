@@ -5,6 +5,12 @@ import { ClipboardCheck, Plus, Trash2, CheckCircle2, Circle, Edit2, FileUp, Load
 import { upsertExam, addQuestion, deleteQuestion, updateQuestion, importQuestions } from "@/app/teacher/courses/actions";
 import * as XLSX from "xlsx";
 
+interface AnswerOption {
+  id?: string;
+  text: string;
+  isCorrect: boolean;
+}
+
 interface ExamManagerProps {
   lessonId: string;
   exam: any; // Simplified for now
@@ -14,15 +20,15 @@ export function ExamManager({ lessonId, exam }: ExamManagerProps) {
   const [isAddingQuestion, setIsAddingQuestion] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [newQuestionText, setNewQuestionText] = useState("");
-  const [options, setOptions] = useState([
-    { id: undefined as string | undefined, text: "", isCorrect: true },
-    { id: undefined as string | undefined, text: "", isCorrect: false },
+  const [options, setOptions] = useState<AnswerOption[]>([
+    { id: undefined, text: "", isCorrect: true },
+    { id: undefined, text: "", isCorrect: false },
   ]);
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddOption = () => {
-    setOptions([...options, { text: "", isCorrect: false }]);
+    setOptions([...options, { id: undefined, text: "", isCorrect: false }]);
   };
 
   const handleRemoveOption = (index: number) => {

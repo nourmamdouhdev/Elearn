@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
         userId,
         type: "WALLET_DEPOSIT",
       },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/wallet?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/wallet?canceled=true`,
+      success_url: `${process.env.NEXTAUTH_URL}/wallet?success=true&amount=${amount}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXTAUTH_URL}/wallet?canceled=true`,
     });
 
     return NextResponse.json({ url: checkoutSession.url });

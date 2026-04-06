@@ -9,7 +9,8 @@ import {
   Wallet, 
   LogOut,
   User,
-  Settings
+  Settings,
+  PlayCircle
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -19,6 +20,7 @@ export function StudentSidebar() {
   const links = [
     { name: "لوحة التحكم", href: "/dashboard", icon: LayoutDashboard },
     { name: "مكتبة الدروس", href: "/courses", icon: BookOpen },
+    { name: "دروسي", href: "/lessons", icon: PlayCircle },
     { name: "قائمة المفضلة", href: "/favorites", icon: Heart },
     { name: "محفظتي المالية", href: "/wallet", icon: Wallet },
   ];
