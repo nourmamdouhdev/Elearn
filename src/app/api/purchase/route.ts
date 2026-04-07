@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error("Purchase error:", error);
-    if (["هذا الدرس غير متاح للشراء", "لقد قمت بشراء هذا الدرس بالفعل ولديك وصول نشط", "رصيد المحفظة غير كافٍ. يرجى شحن الرصيد أولاً"].includes(error.message)) {
+    if (["هذا الدرس غير متاح للشراء", "لقد قمت بشراء هذا الدرس بالفعل ولديك وصول نشط", "رصيد المحفظة غير كافٍ. يرجى شحن الرصيد أولاً", "المحفظة غير موجودة"].includes(error.message)) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json({ error: "حدث خطأ أثناء إتمام عملية الشراء" }, { status: 500 });

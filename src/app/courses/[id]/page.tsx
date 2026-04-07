@@ -9,12 +9,12 @@ import {
   Clock, 
   Award, 
   BookOpen, 
-  ChevronLeft,
-  Heart
+  ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
 import { PurchaseLessonButton } from "@/components/student/PurchaseLessonButton";
 import { PurchaseCourseButton } from "@/components/student/PurchaseCourseButton";
+import { FavoriteButton } from "@/components/student/FavoriteButton";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -133,9 +133,11 @@ export default async function CourseDetailPage({ params }: PageProps) {
                       سجل دخول للشراء
                     </Link>
                   )}
-                  <button className={`btn ${isFavorite ? 'btn-danger' : 'btn-outline'} btn-icon`}>
-                    <Heart size={24} fill={isFavorite ? "currentColor" : "none"} />
-                  </button>
+                  <FavoriteButton
+                    courseId={course.id}
+                    initialFavorite={isFavorite}
+                    isLoggedIn={!!userId}
+                  />
                 </div>
               </div>
             </div>

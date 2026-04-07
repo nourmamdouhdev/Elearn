@@ -1,12 +1,17 @@
 import { StudentSidebar } from "@/components/layout/StudentSidebar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Bell } from "lucide-react";
+import { auth } from "@/lib/auth";
 
-export default function StudentLayout({
+export default async function StudentLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  const userName = session?.user?.name || "طالب";
+  const userInitial = userName[0] || "ط";
+
   return (
     <div className="flex dashboard-theme" style={{ minHeight: "100vh" }}>
       <StudentSidebar />
@@ -18,10 +23,27 @@ export default function StudentLayout({
             <ThemeToggle />
             <button className="btn btn-icon btn-ghost relative">
               <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-card"></span>
             </button>
-            <div className="divider-v" style={{ height: 24, width: 1, backgroundColor: "var(--border-color)" }}></div>
-            <span className="badge badge-primary font-bold">Student</span>
+            <div style={{ height: 24, width: 1, backgroundColor: "var(--border-color)" }} />
+            <div className="flex items-center gap-sm">
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, var(--primary), var(--secondary))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontWeight: 800,
+                  fontSize: "0.8rem",
+                }}
+              >
+                {userInitial}
+              </div>
+              <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>{userName.split(" ")[0]}</span>
+            </div>
           </div>
         </header>
 

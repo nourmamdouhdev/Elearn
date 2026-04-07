@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import { GraduationCap, Moon, Sun, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { NavbarAuth } from "@/components/NavbarAuth";
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -20,12 +21,7 @@ export function Navbar() {
         <ul className="navbar-nav">
           <li><Link href="/" className="navbar-link">الرئيسية</Link></li>
           <li><Link href="/teachers" className="navbar-link">المدرسين</Link></li>
-          <li><Link href="/auth/login" className="navbar-link">تسجيل الدخول</Link></li>
-          <li>
-            <Link href="/auth/register" className="btn btn-primary btn-sm" id="navbar-register">
-              ابدأ مجاناً
-            </Link>
-          </li>
+          <NavbarAuth />
           <li>
             <button
               onClick={toggleTheme}
